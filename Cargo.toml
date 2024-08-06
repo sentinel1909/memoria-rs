@@ -1,0 +1,11 @@
+[package]
+name = "memoria-rs"
+version = "0.1.0"
+edition = "2021"
+description = "A simple program which allows saving of text snippets as key, value pairs"
+readme = "README.md"
+authors = ["Jeffery D. Mitchell", "<sentinel1909@jeff-mitchell.dev>"]
+repository = "https://github.com/sentinel1909/memoria-rs"
+license = 'MIT'
+
+[dependencies]

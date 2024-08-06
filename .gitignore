@@ -1,0 +1,7 @@
+# gitignore file for the memoria-rs package
+
+# VS Code settings
+.vscode
+
+# build artifacts
+target
