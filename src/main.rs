@@ -16,17 +16,17 @@ struct Snippet {
 
 // methods for the Snippet type
 impl Snippet {
-    // create method; creates a new key, value pair
+    // create method; creates a new key, value pair, returns an String wrapped by the Option type
     fn create(&mut self, key: String, value: String) -> Option<String> {
         self.items.insert(key, value)
     }
 
-    // retrieve method; retrieves a given value given a key
+    // retrieve method; retrieves a given value given a key, returns a reference to a String, wrapped by the Option type
     fn retrieve(&self, key: String) -> Option<&String> {
         self.items.get(&key)
     }
 
-    // update method; updates the value associated with a given key
+    // update method; updates the value associated with a given key returns the unit type or an error String, wrapped in a Result type
     fn update(&mut self, key: String, updated_value: String) -> UpdateResult {
         self.items
             .get_mut(&key)
@@ -34,7 +34,7 @@ impl Snippet {
             .ok_or_else(|| format!("Item '{}' not found", key))
     }
 
-    // delete method; deletes a key, value pair given a key
+    // delete method; deletes a key, value pair given a key, returns a String, wrapped by the Option type
     fn delete(&mut self, key: String) -> Option<String> {
         self.items.remove(&key)
     }
