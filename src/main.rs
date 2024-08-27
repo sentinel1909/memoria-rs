@@ -57,7 +57,7 @@ fn read_data() -> std::io::Result<Vec<u8>> {
 
 // function to convert the saved input into our Snippet type
 fn input_to_snippet(raw_data: Vec<u8>, mut snippet: Snippet) -> Snippet {
-    let string_data = String::from_utf8(raw_data).unwrap();
+    let string_data = String::from_utf8(raw_data).expect("Unable to read the data stored in the file.");
     let key_value_pairs = string_data.split("\n").collect::<Vec<&str>>();
     let pairs: Vec<(&str, &str)> = key_value_pairs
         .iter()
@@ -71,11 +71,11 @@ fn input_to_snippet(raw_data: Vec<u8>, mut snippet: Snippet) -> Snippet {
 }
 
 // function to get user input and pass it back for use
-fn get_user_input() -> String {
+fn get_user_input() -> io::Result<String> {
     let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
+    io::stdin().read_line(&mut input)?;
     let input = input.trim().to_string();
-    input
+    Ok(input)
 }
 
 // function to write output to stdout
@@ -90,13 +90,13 @@ fn write_message(message: &[u8], writer: &mut dyn Write) {
 }
 
 // function which triggers the appropriate program functionality, based on the user choice
-fn handle_menu_choice(choice: Menu, snippet: &mut Snippet, mut handle: &mut dyn Write) {
+fn handle_menu_choice(choice: Menu, snippet: &mut Snippet, mut handle: &mut dyn Write) -> io::Result<()> {
     match choice {
         Menu::Create => {
             write_message(b"Enter the new key:", &mut handle);
-            let new_key = get_user_input();
+            let new_key = get_user_input()?;
             write_message(b"Enter the new value for that key: ", &mut handle);
-            let new_value = get_user_input();
+            let new_value = get_user_input()?;
             Snippet::create(snippet, new_key.clone(), new_value.clone());
             write_message(
                 format!("Created new key: {} with value: {}\n", new_key, new_value).as_bytes(),
@@ -105,7 +105,7 @@ fn handle_menu_choice(choice: Menu, snippet: &mut Snippet, mut handle: &mut dyn 
         }
         Menu::Retrieve => {
             write_message(b"Enter the desired key: ", &mut handle);
-            let key = get_user_input();
+            let key = get_user_input()?;
             match Snippet::retrieve(snippet, key) {
                 Some(value) => {
                     write_message(format!("Retrieved: {:?}\n", value).as_bytes(), &mut handle)
@@ -117,15 +117,15 @@ fn handle_menu_choice(choice: Menu, snippet: &mut Snippet, mut handle: &mut dyn 
         }
         Menu::Update => {
             write_message(b"Enter the desired key to update: ", &mut handle);
-            let key = get_user_input();
+            let key = get_user_input()?;
             write_message(b"Enter the desired new value: ", &mut handle);
-            let updated_value = get_user_input();
+            let updated_value = get_user_input()?;
             let _result = Snippet::update(snippet, key.clone(), updated_value);
             write_message(format!("Updated {:?} successfully.\n", key).as_bytes(), &mut handle);
         }
         Menu::Delete => {
             write_message(b"Enter the desired key to delete: ", &mut handle);
-            let key = get_user_input();
+            let key = get_user_input()?;
             let result = Snippet::delete(snippet, key);
             if let Some(deleted) = result {
                 write_message(format!("Deleted: {:?}\n", deleted).as_bytes(), &mut handle);
@@ -136,6 +136,8 @@ fn handle_menu_choice(choice: Menu, snippet: &mut Snippet, mut handle: &mut dyn 
             write_message(b"Exiting the program.\n", &mut handle);
         }
     }
+
+    Ok(())
 }
 
 // main function
@@ -166,17 +168,17 @@ fn main() -> std::io::Result<()> {
         write_message(b"Enter your choice: \n", &mut handle);
 
         // trigger the appropriate menu option based on the user's choice
-        match get_user_input().to_uppercase().as_str() {
-            "C" => handle_menu_choice(Menu::Create, &mut data, &mut handle),
-            "R" => handle_menu_choice(Menu::Retrieve, &mut data, &mut handle),
-            "U" => handle_menu_choice(Menu::Update, &mut data, &mut handle),
-            "D" => handle_menu_choice(Menu::Delete, &mut data, &mut handle),
+        match get_user_input()?.to_uppercase().as_str() {
+            "C" => handle_menu_choice(Menu::Create, &mut data, &mut handle)?,
+            "R" => handle_menu_choice(Menu::Retrieve, &mut data, &mut handle)?,
+            "U" => handle_menu_choice(Menu::Update, &mut data, &mut handle)?,
+            "D" => handle_menu_choice(Menu::Delete, &mut data, &mut handle)?,
             "E" => {
-                handle_menu_choice(Menu::Exit, &mut data, &mut handle);
+                handle_menu_choice(Menu::Exit, &mut data, &mut handle)?;
                 break;
             }
             _ => {
-                writeln!(handle, "Invalid Choice. Please enter C, R, U, D, or E.\n").unwrap();
+                writeln!(handle, "Invalid Choice. Please enter C, R, U, D, or E.\n")?
             }
         };
     }
